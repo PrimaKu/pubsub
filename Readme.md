@@ -37,7 +37,7 @@ func main() {
     }
 
     // Create a topic
-    err = client.CreateTopic(ctx, "my-topic")
+    err = client.EnsureTopicExists(ctx, "my-topic")
     if err != nil {
         // Handle error
     }

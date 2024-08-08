@@ -27,15 +27,18 @@ func NewClient(ctx context.Context, projectID string) (*Client, error) {
 
 func (c *Client) CreateTopic(ctx context.Context, topicId string) error {
 	topic := c.client.Topic(topicId)
+
 	exists, err := topic.Exists(ctx)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		_, err = c.client.CreateTopic(ctx, topicId)
-		return err
+	if exists {
+		topic.Stop()
+		return nil
 	}
-	return nil
+
+	_, err = c.client.CreateTopic(ctx, topicId)
+	return err
 }
 
 func (c *Client) DeleteTopic(ctx context.Context, topicId string) error {
@@ -61,14 +64,14 @@ func (c *Client) GetTopics(ctx context.Context) ([]string, error) {
 	return topicIds, nil
 }
 
-func (c *Client) JoinTopic(ctx context.Context, topicId string) error {
-	t := c.client.Topic(topicId)
-	exists, err := t.Exists(ctx)
+func (c *Client) EnsureTopicExists(ctx context.Context, topicId string) error {
+	topic := c.client.Topic(topicId)
+	exists, err := topic.Exists(ctx)
 	if err != nil {
 		return err
 	}
 	if exists {
-		t.Stop()
+		topic.Stop()
 		return nil
 	}
 
@@ -137,7 +140,7 @@ func (c *Client) GetSubscriptions(ctx context.Context) ([]string, error) {
 	return subIds, nil
 }
 
-func (c *Client) JoinSubscription(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
+func (c *Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
 	sub := c.client.Subscription(subscriptionId)
 	exists, err := sub.Exists(ctx)
 	if err != nil {
@@ -227,7 +230,7 @@ func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
 func handleMessage(ctx context.Context, msg *pubsub.Message, handler MessageHandler) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("Recovered from panic in message processing: %v", r)
+			fmt.Printf("Recovered from panic in pubsub message processing: %v", r)
 			msg.Nack()
 		}
 	}()
