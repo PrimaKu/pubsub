@@ -9,8 +9,9 @@ import (
 )
 
 type Client struct {
-	ctx    context.Context
-	client *pubsub.Client
+	ctx       context.Context
+	projectId string
+	client    *pubsub.Client
 }
 
 func NewClient(ctx context.Context, projectID string) (*Client, error) {
@@ -20,8 +21,9 @@ func NewClient(ctx context.Context, projectID string) (*Client, error) {
 	}
 
 	return &Client{
-		ctx:    ctx,
-		client: c,
+		ctx:       ctx,
+		projectId: projectID,
+		client:    c,
 	}, nil
 }
 
@@ -204,6 +206,10 @@ func constructPsSubscriptionConfig(topic *pubsub.Topic, conf *SubscriptionConfig
 			MaximumBackoff: conf.RetryPolicy.MaxBackoffTime,
 		}
 	}
+}
+
+func (c *Client) constructTopicName(topicID string) string {
+	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicID)
 }
 
 func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
