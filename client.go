@@ -166,9 +166,30 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 		sub.ReceiveSettings.NumGoroutines = conf.NumOfGoroutines
 	}
 
-	return sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		handleMessage(ctx, msg, handler)
+	err := sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		message := Message{
+			Id:              msg.ID,
+			Payload:         msg.Data,
+			Attributes:      msg.Attributes,
+			OrderingKey:     msg.OrderingKey,
+			Publish:         msg.PublishTime,
+			DeliveryAttempt: msg.DeliveryAttempt,
+		}
+
+		err := handler(ctx, message)
+		if err != nil {
+			msg.Nack()
+			return
+		}
+
+		msg.Ack()
+		return
 	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Client) Close() error {
@@ -231,30 +252,4 @@ func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
 	if msg.DeliveryAttempt != nil {
 		pubSubMsg.DeliveryAttempt = msg.DeliveryAttempt
 	}
-}
-
-func handleMessage(ctx context.Context, msg *pubsub.Message, handler MessageHandler) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("Recovered from panic in pubsub message processing: %v", r)
-			msg.Nack()
-		}
-	}()
-
-	message := Message{
-		Id:              msg.ID,
-		Payload:         msg.Data,
-		Attributes:      msg.Attributes,
-		OrderingKey:     msg.OrderingKey,
-		Publish:         msg.PublishTime,
-		DeliveryAttempt: msg.DeliveryAttempt,
-	}
-
-	err := handler(ctx, message)
-	if err != nil {
-		msg.Nack()
-		return
-	}
-
-	msg.Ack()
 }
