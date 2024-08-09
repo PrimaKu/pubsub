@@ -4,7 +4,7 @@ import "time"
 
 const (
 	DefaultAckTimeout      = 60 * time.Second
-	DefaultRetentionPeriod = 14 * 24 * time.Hour
+	DefaultRetentionPeriod = 7 * 24 * time.Hour
 )
 
 type DeadLetterPolicy struct {
