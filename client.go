@@ -167,7 +167,7 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 		sub.ReceiveSettings.NumGoroutines = conf.NumOfGoroutines
 	}
 
-	err := sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+	return sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		message := Message{
 			Id:              msg.ID,
 			Data:            msg.Data,
@@ -185,14 +185,13 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 			return
 		}
 
-		msg.Ack()
-		fmt.Printf("[pubsub][onMessageAcked] id: %s", message.Id)
+		result, err := msg.AckWithResult().Get(ctx)
+		if err != nil {
+			fmt.Printf("[pubsub][onMessageAckErr] err: %v", err)
+			return
+		}
+		fmt.Printf("[pubsub][onMessageAcked] status: %d, messageId: %s", result, message.Id)
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *Client) Close() error {
