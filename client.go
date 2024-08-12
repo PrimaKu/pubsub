@@ -185,12 +185,8 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 			return
 		}
 
-		result, err := msg.AckWithResult().Get(ctx)
-		if err != nil {
-			fmt.Printf("[pubsub][onMessageAckErr] err: %v", err)
-			return
-		}
-		fmt.Printf("[pubsub][onMessageAcked] status: %d, messageId: %s", result, message.Id)
+		msg.Ack()
+		fmt.Printf("[pubsub][onMessageAcked] id: %s", message.Id)
 	})
 }
 
