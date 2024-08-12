@@ -95,9 +95,11 @@ func (c *Client) Publish(ctx context.Context, topicId string, msg Message) (stri
 
 	messageId, err := result.Get(ctx)
 	if err != nil {
+		fmt.Printf("[pubsub][onMessagePublishErr] error: %v", err)
 		return "", err
 	}
 
+	fmt.Printf("[pubsub][onMessagePublished] id: %s", messageId)
 	return messageId, nil
 }
 
@@ -175,14 +177,18 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 			Publish:         msg.PublishTime,
 			DeliveryAttempt: msg.DeliveryAttempt,
 		}
+		fmt.Printf("[pubsub][onMessageReceived] %+v", message)
 
 		err := handler(ctx, message)
 		if err != nil {
 			msg.Nack()
+			fmt.Printf("[pubsub][onMessageNacked] id: %s", message.Id)
 			return
 		}
 
 		msg.Ack()
+		fmt.Printf("[pubsub][onMessageAcked] id: %s", message.Id)
+
 		return
 	})
 
