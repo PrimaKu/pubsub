@@ -171,7 +171,7 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 	err := sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		message := Message{
 			Id:              msg.ID,
-			Payload:         msg.Data,
+			Data:            msg.Data,
 			Attributes:      msg.Attributes,
 			OrderingKey:     msg.OrderingKey,
 			Publish:         msg.PublishTime,
@@ -240,7 +240,7 @@ func (c *Client) constructTopicName(topicID string) string {
 }
 
 func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
-	pubSubMsg.Data = msg.Payload
+	pubSubMsg.Data = msg.Data
 	pubSubMsg.Attributes = msg.Attributes
 
 	if msg.OrderingKey != "" {
