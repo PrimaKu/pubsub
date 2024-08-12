@@ -159,7 +159,6 @@ func (c *Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscrip
 
 func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf SubscribeConfig, handler MessageHandler) error {
 	sub := c.client.Subscription(subscriptionId)
-
 	if conf.MaxOutstandingMessages > 0 {
 		sub.ReceiveSettings.MaxOutstandingMessages = conf.MaxOutstandingMessages
 	}
@@ -188,13 +187,11 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 
 		msg.Ack()
 		fmt.Printf("[pubsub][onMessageAcked] id: %s", message.Id)
-
-		return
 	})
-
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
