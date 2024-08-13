@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
+	"time"
 )
 
 type Client struct {
@@ -14,8 +16,8 @@ type Client struct {
 	client    *pubsub.Client
 }
 
-func NewClient(ctx context.Context, projectID string) (*Client, error) {
-	c, err := pubsub.NewClient(ctx, projectID)
+func NewClient(ctx context.Context, projectID string, opts ...option.ClientOption) (*Client, error) {
+	c, err := pubsub.NewClient(ctx, projectID, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -197,17 +199,18 @@ func (c *Client) Close() error {
 func constructPsSubscriptionConfig(topic *pubsub.Topic, conf *SubscriptionConfig, psSubscriptionConf *pubsub.SubscriptionConfig) {
 	psSubscriptionConf.Topic = topic
 
-	if conf.RetentionPeriod > 0 {
+	psSubscriptionConf.RetentionDuration = DefaultRetentionPeriod
+	if conf.RetentionPeriod >= MinRetentionPeriod && conf.RetentionPeriod <= MaxRetentionPeriod {
 		psSubscriptionConf.RetentionDuration = conf.RetentionPeriod
-	} else {
-		psSubscriptionConf.RetentionDuration = DefaultRetentionPeriod
 	}
 
-	if conf.AckDeadline > 0 {
+	psSubscriptionConf.AckDeadline = DefaultAckDeadline
+	if conf.AckDeadline >= MinAckDeadline && conf.AckDeadline <= MaxAckDeadline {
 		psSubscriptionConf.AckDeadline = conf.AckDeadline
-	} else {
-		psSubscriptionConf.AckDeadline = DefaultAckTimeout
 	}
+
+	psSubscriptionConf.RetainAckedMessages = false
+	psSubscriptionConf.ExpirationPolicy = time.Duration(0) // to indicate that the subscription should never expire.
 
 	psSubscriptionConf.EnableMessageOrdering = conf.UseMessageOrdering
 	psSubscriptionConf.EnableExactlyOnceDelivery = conf.UseExactlyOnceDelivery
@@ -227,8 +230,12 @@ func constructPsSubscriptionConfig(topic *pubsub.Topic, conf *SubscriptionConfig
 	}
 }
 
-func (c *Client) constructTopicName(topicID string) string {
-	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicID)
+func (c *Client) constructTopicName(topicName string) string {
+	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicName)
+}
+
+func (c *Client) constructSubscriptionName(subscriptionName string) string {
+	return fmt.Sprintf("projects/%s/subscriptions/%s", c.projectId, subscriptionName)
 }
 
 func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {

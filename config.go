@@ -3,7 +3,12 @@ package pubsub
 import "time"
 
 const (
-	DefaultAckTimeout      = 60 * time.Second
+	MinAckDeadline     = 10 * time.Second
+	MaxAckDeadline     = 600 * time.Second
+	DefaultAckDeadline = 60 * time.Second
+
+	MinRetentionPeriod     = 10 * time.Minute
+	MaxRetentionPeriod     = 7 * 24 * time.Hour
 	DefaultRetentionPeriod = 7 * 24 * time.Hour
 )
 
