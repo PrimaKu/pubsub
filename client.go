@@ -74,12 +74,12 @@ func (c *Client) EnsureTopicExists(ctx context.Context, topicId string) error {
 	if err != nil {
 		return err
 	}
-	if exists {
-		topic.Stop()
-		return nil
+	if !exists {
+		return fmt.Errorf("topic %s not found, please contact infra team to add the topic", topicId)
 	}
 
-	return c.CreateTopic(ctx, topicId)
+	topic.Stop()
+	return nil
 }
 
 func (c *Client) Publish(ctx context.Context, topicId string, msg Message) (string, error) {
