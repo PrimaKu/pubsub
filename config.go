@@ -5,11 +5,18 @@ import "time"
 const (
 	MinAckDeadline     = 10 * time.Second
 	MaxAckDeadline     = 600 * time.Second
-	DefaultAckDeadline = 60 * time.Second
+	DefaultAckDeadline = 30 * time.Second
 
 	MinRetentionPeriod     = 10 * time.Minute
 	MaxRetentionPeriod     = 7 * 24 * time.Hour
 	DefaultRetentionPeriod = 7 * 24 * time.Hour
+
+	MinExtensionPeriod        = 10 * time.Second
+	MaxExtensionPeriod        = 600 * time.Second
+	DefaultMinExtensionPeriod = 30 * time.Second
+	DefaultMaxExtensionPeriod = 60 * time.Second
+
+	DefaultNumOfGoroutines = 5
 )
 
 type DeadLetterPolicy struct {
@@ -47,7 +54,16 @@ type SubscriptionConfig struct {
 
 // SubscribeConfig represents the configuration options for a PubSub subscriber.
 type SubscribeConfig struct {
-	// MaxOutstandingMessages specifies the maximum number of messages the client will hold in memory at a time.
+	// MinExtensionPeriod is the minimum duration by which to extend the ack deadline at a time.
+	MinExtensionPeriod time.Duration
+
+	// MaxExtensionPeriod is the maximum duration by which to extend the ack deadline at a time.
+	MaxExtensionPeriod time.Duration
+
+	// MaxOutstandingBytes specifies the maximum size of unprocessed messages (unacknowledged but not yet expired).
+	MaxOutstandingBytes int
+
+	// MaxOutstandingMessages specifies the maximum number of unprocessed messages (unacknowledged but not yet expired).
 	MaxOutstandingMessages int
 
 	// NumOfGoroutines specifies the number of process to consume the PubSub messages.

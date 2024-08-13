@@ -161,13 +161,7 @@ func (c *Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscrip
 
 func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf SubscribeConfig, handler MessageHandler) error {
 	sub := c.client.Subscription(subscriptionId)
-	if conf.MaxOutstandingMessages > 0 {
-		sub.ReceiveSettings.MaxOutstandingMessages = conf.MaxOutstandingMessages
-	}
-
-	if conf.NumOfGoroutines > 0 {
-		sub.ReceiveSettings.NumGoroutines = conf.NumOfGoroutines
-	}
+	constructPsSubscribeConfigMsg(sub, &conf)
 
 	return sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		message := Message{
@@ -230,12 +224,29 @@ func constructPsSubscriptionConfig(topic *pubsub.Topic, conf *SubscriptionConfig
 	}
 }
 
-func (c *Client) constructTopicName(topicName string) string {
-	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicName)
-}
+func constructPsSubscribeConfigMsg(sub *pubsub.Subscription, conf *SubscribeConfig) {
+	if conf.MaxOutstandingMessages != 0 {
+		sub.ReceiveSettings.MaxOutstandingMessages = conf.MaxOutstandingMessages
+	}
 
-func (c *Client) constructSubscriptionName(subscriptionName string) string {
-	return fmt.Sprintf("projects/%s/subscriptions/%s", c.projectId, subscriptionName)
+	if conf.MaxOutstandingBytes != 0 {
+		sub.ReceiveSettings.MaxOutstandingBytes = conf.MaxOutstandingBytes
+	}
+
+	sub.ReceiveSettings.NumGoroutines = DefaultNumOfGoroutines
+	if conf.NumOfGoroutines > 0 {
+		sub.ReceiveSettings.NumGoroutines = conf.NumOfGoroutines
+	}
+
+	sub.ReceiveSettings.MinExtensionPeriod = DefaultMinExtensionPeriod
+	if conf.MinExtensionPeriod >= MinExtensionPeriod && conf.MinExtensionPeriod <= MaxExtensionPeriod {
+		sub.ReceiveSettings.MinExtensionPeriod = conf.MinExtensionPeriod
+	}
+
+	sub.ReceiveSettings.MaxExtensionPeriod = DefaultMaxExtensionPeriod
+	if conf.MaxExtensionPeriod >= MinExtensionPeriod && conf.MaxExtensionPeriod <= MaxExtensionPeriod {
+		sub.ReceiveSettings.MaxExtensionPeriod = conf.MaxExtensionPeriod
+	}
 }
 
 func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
@@ -257,4 +268,12 @@ func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
 	if msg.DeliveryAttempt != nil {
 		pubSubMsg.DeliveryAttempt = msg.DeliveryAttempt
 	}
+}
+
+func (c *Client) constructTopicName(topicName string) string {
+	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicName)
+}
+
+func (c *Client) constructSubscriptionName(subscriptionName string) string {
+	return fmt.Sprintf("projects/%s/subscriptions/%s", c.projectId, subscriptionName)
 }
