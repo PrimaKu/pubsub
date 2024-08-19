@@ -75,7 +75,7 @@ func (c *Client) EnsureTopicExists(ctx context.Context, topicId string) error {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("topic %s not found, please contact infra team to add the topic", topicId)
+		return fmt.Errorf("topic %s not found", topicId)
 	}
 
 	topic.Stop()

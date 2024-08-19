@@ -69,9 +69,3 @@ type SubscribeConfig struct {
 	// NumOfGoroutines specifies the number of process to consume the PubSub messages.
 	NumOfGoroutines int
 }
-
-// PublishConfig represents the configuration options for a PubSub publisher.
-type PublishConfig struct {
-	// OrderingKey specifies the ordering key to be used for message publishing.
-	OrderingKey string // Add ordering key on message
-}
