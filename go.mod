@@ -1,4 +1,4 @@
-module github.com/primaKu/pubsub
+module github.com/PrimaKu/pubsub
 
 go 1.20
 
