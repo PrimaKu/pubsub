@@ -27,7 +27,7 @@ func NewClient(ctx context.Context, projectID string, opts ...option.ClientOptio
 	}, nil
 }
 
-func (c *Client) CreateTopic(ctx context.Context, topicId string) error {
+func (c Client) CreateTopic(ctx context.Context, topicId string) error {
 	topic := c.client.Topic(topicId)
 
 	exists, err := topic.Exists(ctx)
@@ -43,12 +43,12 @@ func (c *Client) CreateTopic(ctx context.Context, topicId string) error {
 	return err
 }
 
-func (c *Client) DeleteTopic(ctx context.Context, topicId string) error {
+func (c Client) DeleteTopic(ctx context.Context, topicId string) error {
 	topic := c.client.Topic(topicId)
 	return topic.Delete(ctx)
 }
 
-func (c *Client) GetTopics(ctx context.Context) ([]string, error) {
+func (c Client) GetTopics(ctx context.Context) ([]string, error) {
 	topics := c.client.Topics(ctx)
 	var topicIds []string
 
@@ -66,7 +66,7 @@ func (c *Client) GetTopics(ctx context.Context) ([]string, error) {
 	return topicIds, nil
 }
 
-func (c *Client) EnsureTopicExists(ctx context.Context, topicId string) error {
+func (c Client) EnsureTopicExists(ctx context.Context, topicId string) error {
 	topic := c.client.Topic(topicId)
 	exists, err := topic.Exists(ctx)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *Client) EnsureTopicExists(ctx context.Context, topicId string) error {
 	return nil
 }
 
-func (c *Client) Publish(ctx context.Context, topicId string, msg Message) (string, error) {
+func (c Client) Publish(ctx context.Context, topicId string, msg Message) (string, error) {
 	topic := c.client.Topic(topicId)
 	defer topic.Stop()
 
@@ -103,7 +103,7 @@ func (c *Client) Publish(ctx context.Context, topicId string, msg Message) (stri
 	return messageId, nil
 }
 
-func (c *Client) CreateSubscription(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
+func (c Client) CreateSubscription(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
 	topic := c.client.Topic(topicId)
 	sub := c.client.Subscription(subscriptionId)
 	isSubExist, err := sub.Exists(ctx)
@@ -121,12 +121,12 @@ func (c *Client) CreateSubscription(ctx context.Context, topicId, subscriptionId
 	return nil
 }
 
-func (c *Client) DeleteSubscription(ctx context.Context, subscriptionId string) error {
+func (c Client) DeleteSubscription(ctx context.Context, subscriptionId string) error {
 	sub := c.client.Subscription(subscriptionId)
 	return sub.Delete(ctx)
 }
 
-func (c *Client) GetSubscriptions(ctx context.Context) ([]string, error) {
+func (c Client) GetSubscriptions(ctx context.Context) ([]string, error) {
 	subs := c.client.Subscriptions(ctx)
 	var subIds []string
 
@@ -144,7 +144,7 @@ func (c *Client) GetSubscriptions(ctx context.Context) ([]string, error) {
 	return subIds, nil
 }
 
-func (c *Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
+func (c Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscriptionId string, conf *SubscriptionConfig) error {
 	sub := c.client.Subscription(subscriptionId)
 	exists, err := sub.Exists(ctx)
 	if err != nil {
@@ -157,7 +157,7 @@ func (c *Client) EnsureSubscriptionExists(ctx context.Context, topicId, subscrip
 	return c.CreateSubscription(ctx, topicId, subscriptionId, conf)
 }
 
-func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf SubscribeConfig, handler MessageHandler) error {
+func (c Client) Subscribe(ctx context.Context, subscriptionId string, conf SubscribeConfig, handler MessageHandler) error {
 	sub := c.client.Subscription(subscriptionId)
 	constructPsSubscribeConfigMsg(sub, &conf)
 
@@ -184,7 +184,7 @@ func (c *Client) Subscribe(ctx context.Context, subscriptionId string, conf Subs
 	})
 }
 
-func (c *Client) Close() error {
+func (c Client) Close() error {
 	return c.client.Close()
 }
 
@@ -268,10 +268,10 @@ func constructPubSubMsg(pubSubMsg *pubsub.Message, msg Message) {
 	}
 }
 
-func (c *Client) constructTopicName(topicName string) string {
+func (c Client) constructTopicName(topicName string) string {
 	return fmt.Sprintf("projects/%s/topics/%s", c.projectId, topicName)
 }
 
-func (c *Client) constructSubscriptionName(subscriptionName string) string {
+func (c Client) constructSubscriptionName(subscriptionName string) string {
 	return fmt.Sprintf("projects/%s/subscriptions/%s", c.projectId, subscriptionName)
 }
