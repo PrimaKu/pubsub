@@ -11,19 +11,17 @@ import (
 )
 
 type Client struct {
-	ctx       context.Context
 	projectId string
 	client    *pubsub.Client
 }
 
-func NewClient(ctx context.Context, projectID string, opts ...option.ClientOption) (*Client, error) {
+func NewClient(ctx context.Context, projectID string, opts ...option.ClientOption) (Client, error) {
 	c, err := pubsub.NewClient(ctx, projectID, opts...)
 	if err != nil {
-		return nil, err
+		return Client{}, err
 	}
 
-	return &Client{
-		ctx:       ctx,
+	return Client{
 		projectId: projectID,
 		client:    c,
 	}, nil
