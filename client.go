@@ -95,7 +95,7 @@ func (c Client) Publish(ctx context.Context, topicId string, msg Message) (strin
 
 	messageId, err := result.Get(ctx)
 	if err != nil {
-		fmt.Printf("[pubsub][onMessagePublishErr] error: %v", err)
+		fmt.Printf("[pubsub][onMessagePublishErr] err: %s", err.Error())
 		return "", err
 	}
 
@@ -170,7 +170,7 @@ func (c Client) Subscribe(ctx context.Context, subscriptionId string, conf Subsc
 			Publish:         msg.PublishTime,
 			DeliveryAttempt: msg.DeliveryAttempt,
 		}
-		fmt.Printf("[pubsub][onMessageReceived] %+v", message)
+		fmt.Printf("[pubsub][onMessageReceived] id: %s", message.Id)
 
 		err := handler(ctx, message)
 		if err != nil {
